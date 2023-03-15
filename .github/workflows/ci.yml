@@ -131,7 +131,7 @@ jobs:
         with:
           components: rustfmt
       - run: cargo fmt --all -- --check
-  
+
   android_fmt:
     name: Ktlint
     runs-on: ubuntu-latest
