@@ -75,7 +75,7 @@ jobs:
         run: cargo test
 
       - name: Setup Android test environment
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         if: matrix.os == 'macos-latest'
         with:
           distribution: 'temurin'
