@@ -21,8 +21,8 @@
 ))]
 
 use super::TestCase;
-use crate::verification::{error_messages, Verifier};
-use rustls::{client::ServerCertVerifier, Error as TlsError};
+use crate::verification::Verifier;
+use rustls::{client::ServerCertVerifier, CertificateError, Error as TlsError};
 use std::convert::TryFrom;
 use std::net::IpAddr;
 
@@ -94,12 +94,13 @@ pub(super) fn verification_without_mock_root() {
         std::time::SystemTime::now(),
     );
 
-    assert_eq!(
-        result.map(|_| ()),
-        Err(TlsError::InvalidCertificateData(String::from(
-            error_messages::UNKNOWN_CERT
-        )))
-    );
+    let res = result.map(|_| ());
+    assert!(matches!(
+        res,
+        Err(TlsError::InvalidCertificate(
+            CertificateError::UnknownIssuer
+        ))
+    ));
 }
 
 #[test]
@@ -154,19 +155,19 @@ mock_root_test_cases! {
         reference_id: EXAMPLE_COM,
         chain: &[include_bytes!("root1-int1-ee_example.com-revoked.crt"), ROOT1_INT1],
         stapled_ocsp: Some(include_bytes!("root1-int1-ee_example.com-revoked.ocsp")),
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::REVOKED))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::Revoked)),
     },
     stapled_revoked_ipv4 [ any(windows, target_os = "macos") ] => TestCase {
         reference_id: LOCALHOST_IPV4,
         chain: &[include_bytes!("root1-int1-ee_127.0.0.1-revoked.crt"), ROOT1_INT1],
         stapled_ocsp: Some(include_bytes!("root1-int1-ee_127.0.0.1-revoked.ocsp")),
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::REVOKED))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::Revoked)),
     },
     stapled_revoked_ipv6 [ any(windows, target_os = "macos") ] => TestCase {
         reference_id: LOCALHOST_IPV6,
         chain: &[include_bytes!("root1-int1-ee_1-revoked.crt"), ROOT1_INT1],
         stapled_ocsp: Some(include_bytes!("root1-int1-ee_1-revoked.ocsp")),
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::REVOKED))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::Revoked)),
     },
     // Validation fails with no intermediate (that can't be fetched
     // with AIA because there's no AIA issuer field in the certificate).
@@ -177,56 +178,56 @@ mock_root_test_cases! {
         reference_id: EXAMPLE_COM,
         chain: &[ROOT1_INT1_EXAMPLE_COM_GOOD],
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::UNKNOWN_CERT))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::UnknownIssuer)),
     },
     ee_only_ipv4 [ any(windows, target_os = "macos") ] => TestCase {
         reference_id: LOCALHOST_IPV4,
         chain: &[ROOT1_INT1_LOCALHOST_IPV4_GOOD],
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::UNKNOWN_CERT))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::UnknownIssuer)),
     },
     ee_only_ipv6 [ any(windows, target_os = "macos") ] => TestCase {
         reference_id: LOCALHOST_IPV6,
         chain: &[ROOT1_INT1_LOCALHOST_IPV6_GOOD],
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::UNKNOWN_CERT))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::UnknownIssuer)),
     },
     // Validation fails when the certificate isn't valid for the reference ID.
     domain_mismatch_dns [ any(windows, target_os = "android", target_os = "macos", target_os = "linux") ] => TestCase {
         reference_id: "example.org",
         chain: &[ROOT1_INT1_EXAMPLE_COM_GOOD, ROOT1_INT1],
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::WRONG_NAME))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::NotValidForName)),
     },
     domain_mismatch_ipv4 [ any(windows, target_os = "macos") ] => TestCase {
         reference_id: "198.168.0.1",
         chain: &[ROOT1_INT1_LOCALHOST_IPV4_GOOD, ROOT1_INT1],
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::WRONG_NAME))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::NotValidForName)),
     },
     domain_mismatch_ipv6 [ any(windows, target_os = "macos") ] => TestCase {
         reference_id: "::ffff:c6a8:1",
         chain: &[ROOT1_INT1_LOCALHOST_IPV6_GOOD, ROOT1_INT1],
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::WRONG_NAME))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::NotValidForName)),
     },
     wrong_eku_dns [ any(windows, target_os = "android", target_os = "macos", target_os = "linux") ] => TestCase {
         reference_id: EXAMPLE_COM,
         chain: &[include_bytes!("root1-int1-ee_example.com-wrong_eku.crt"), ROOT1_INT1],
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::INVALID_EXTENSIONS))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::UnhandledCriticalExtension)),
     },
     wrong_eku_ipv4 [ any(windows, target_os = "macos") ] => TestCase {
         reference_id: LOCALHOST_IPV4,
         chain: &[include_bytes!("root1-int1-ee_127.0.0.1-wrong_eku.crt"), ROOT1_INT1],
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::INVALID_EXTENSIONS))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::UnhandledCriticalExtension)),
     },
     wrong_eku_ipv6 [ any(windows, target_os = "macos") ] => TestCase {
         reference_id: LOCALHOST_IPV6,
         chain: &[include_bytes!("root1-int1-ee_1-wrong_eku.crt"), ROOT1_INT1],
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::INVALID_EXTENSIONS))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::UnhandledCriticalExtension)),
     },
 }
 
@@ -264,6 +265,7 @@ fn test_with_mock_root(test_case: &TestCase) {
         test_case.stapled_ocsp.unwrap_or(&[]),
         std::time::SystemTime::now(),
     );
-    assert_eq!(result.map(|_| ()), test_case.expected_result);
+    let _expected = &test_case.expected_result;
+    assert!(matches!(result.map(|_| ()), _expected));
     // TODO: get into specifics of errors returned when it fails.
 }

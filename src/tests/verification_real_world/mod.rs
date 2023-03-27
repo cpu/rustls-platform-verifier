@@ -42,8 +42,7 @@
 //! Thus we don't expect these tests to be flaky w.r.t. that, except for
 //! potentially poor performance.     
 use super::TestCase;
-use crate::verification::error_messages;
-use rustls::Error as TlsError;
+use rustls::{CertificateError, Error as TlsError};
 use std::convert::TryFrom;
 
 const SHARED_CHAIN: &[&[u8]] = &[
@@ -143,16 +142,14 @@ fn real_world_test(test_case: &TestCase) {
 
     // Note: Linux is special-cased becuse it uses the defaukt `webpki` verifier, meaning
     // that we have no control over the error strings used.
-    if test_case.expected_result.is_err() && cfg!(target_os = "linux") {
-        assert_eq!(
-            result,
-            Err(TlsError::InvalidCertificateData(String::from(
-                "invalid peer certificate: CertNotValidForName"
-            )))
-        )
+    let _expected = if test_case.expected_result.is_err() && cfg!(target_os = "linux") {
+        &Err(TlsError::InvalidCertificate(
+            CertificateError::NotValidForName,
+        ))
     } else {
-        assert_eq!(result.map(|_| ()), test_case.expected_result);
-    }
+        &test_case.expected_result
+    };
+    assert!(matches!(result.map(|_| ()), _expected));
     // TODO: get into specifics of errors returned when it fails.
 }
 
@@ -185,7 +182,7 @@ real_world_test_cases! {
         reference_id: VALID_UNRELATED_DOMAIN,
         chain: VALID_1PASSWORD_COM_CHAIN,
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::WRONG_NAME))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::NotValidForName)),
     },
     // The certificate chain for the unrelated domain is valid for that
     // unrelated domain.
@@ -201,7 +198,7 @@ real_world_test_cases! {
         reference_id: MY_1PASSWORD_COM,
         chain: VALID_UNRELATED_CHAIN,
         stapled_ocsp: None,
-        expected_result: Err(TlsError::InvalidCertificateData(String::from(error_messages::WRONG_NAME))),
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::NotValidForName)),
     },
 
     // OCSP stapling works.
