@@ -42,6 +42,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
+name = "base64"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4a4ddaa51a5bc52a6948f74c06d20aaaddb71924eab79b8c97a8c556e942d6a"
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -270,9 +276,8 @@ dependencies = [
 
 [[package]]
 name = "hyper-rustls"
-version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d87c48c02e0dc5e3b849a2041db3029fd066650f8f717c07bf8ed78ccb895cac"
+version = "0.23.2"
+source = "git+https://github.com/cpu/hyper-rustls?branch=cpu-rustls-0.21.0-prep#5179ae10b8dfa05abbee5bbfee998d31b0849ee8"
 dependencies = [
  "http",
  "hyper",
@@ -494,11 +499,10 @@ checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
 
 [[package]]
 name = "reqwest"
-version = "0.11.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "431949c384f4e2ae07605ccaa56d1d9d2ecdb5cadd4f9577ccfab29f2e5149fc"
+version = "0.11.15"
+source = "git+https://github.com/cpu/reqwest?branch=cpu-rustls-0.21.0-prep#cb672e12643bb7b1a361d96aab541e36f9345732"
 dependencies = [
- "base64",
+ "base64 0.21.0",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -547,21 +551,19 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.20.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aab8ee6c7097ed6057f43c187a62418d0c05a4bd5f18b3571db50ee0f9ce033"
+version = "0.21.0-alpha.1"
+source = "git+https://github.com/rustls/rustls.git#cad6b729ba7c9b94cf96f14ccc42a8d564f8b545"
 dependencies = [
  "log",
  "ring",
+ "rustls-webpki",
  "sct",
- "webpki",
 ]
 
 [[package]]
 name = "rustls-native-certs"
 version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0167bac7a9f490495f3c33013e7722b53cb087ecbe082fb0c6387c96f634ea50"
+source = "git+https://github.com/cpu/rustls-native-certs?branch=cpu-rustls-0.21.0-prep#c5cc115a022714edcde1fb91596b25942cbaa278"
 dependencies = [
  "openssl-probe",
  "rustls-pemfile",
@@ -575,7 +577,7 @@ version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0864aeff53f8c05aa08d86e5ef839d3dfcf07aeba2db32f12db0ef716e87bd55"
 dependencies = [
- "base64",
+ "base64 0.13.0",
 ]
 
 [[package]]
@@ -583,7 +585,7 @@ name = "rustls-platform-verifier"
 version = "0.1.0"
 dependencies = [
  "android_logger",
- "base64",
+ "base64 0.13.0",
  "core-foundation",
  "core-foundation-sys",
  "jni",
@@ -592,12 +594,22 @@ dependencies = [
  "reqwest",
  "rustls",
  "rustls-native-certs",
+ "rustls-webpki",
  "security-framework",
  "security-framework-sys",
  "tokio",
- "webpki",
  "webpki-roots",
  "winapi",
+]
+
+[[package]]
+name = "rustls-webpki"
+version = "0.100.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3ebea7be4213f3fcfb1a680824ebbd3b39f1521d167c2cf060f7bf994b7ac44"
+dependencies = [
+ "ring",
+ "untrusted",
 ]
 
 [[package]]
@@ -792,8 +804,7 @@ dependencies = [
 [[package]]
 name = "tokio-rustls"
 version = "0.23.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c43ee83903113e03984cb9e5cebe6c04a5116269e900e3ddba8f068a62adda59"
+source = "git+https://github.com/cpu/tokio-tls?branch=cpu-rustls-0.21.0-prep#131d42b6006cede3f12dfa0458ec066f4653591f"
 dependencies = [
  "rustls",
  "tokio",
