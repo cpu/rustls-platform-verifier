@@ -22,11 +22,19 @@ mod windows;
 #[cfg(windows)]
 pub use windows::Verifier;
 
-#[cfg(any(windows, target_os = "android", target_os = "macos", target_os = "ios"))]
-/// Custom error messages for errors that are the same across non-WebPKI verification platforms.
-pub mod error_messages {
-    pub const INVALID_EXTENSIONS: &str = "certificate had invalid extensions";
+/// An EKU was invalid for the use case of verifying a server certificate.
+///
+/// This error is used primarily for tests.
+#[derive(Debug, PartialEq)]
+pub(crate) struct EkuError;
+
+impl std::fmt::Display for EkuError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("certificate had invalid extensions")
+    }
 }
+
+impl std::error::Error for EkuError {}
 
 // Log the certificate we are verifying so that we can try and find what may be wrong with it
 // if we need to debug a user's situation.

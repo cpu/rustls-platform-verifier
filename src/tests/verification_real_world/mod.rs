@@ -113,7 +113,13 @@ macro_rules! real_world_test_cases {
     }
 }
 
-fn real_world_test(test_case: &TestCase) {
+macro_rules! no_error {
+    () => {
+        None::<std::convert::Infallible>
+    };
+}
+
+fn real_world_test<E: std::error::Error>(test_case: &TestCase<E>) {
     log::info!("verifying {:?}", test_case.expected_result);
 
     let verifier = crate::verifier_for_testing();
@@ -141,7 +147,11 @@ fn real_world_test(test_case: &TestCase) {
         )
         .map(|_| ());
 
-    assert_cert_error_eq(&result.map(|_| ()), &test_case.expected_result);
+    assert_cert_error_eq(
+        &result.map(|_| ()),
+        &test_case.expected_result,
+        None::<&std::convert::Infallible>,
+    );
     // TODO: get into specifics of errors returned when it fails.
 }
 
@@ -154,6 +164,7 @@ real_world_test_cases! {
         chain: VALID_1PASSWORD_COM_CHAIN,
         stapled_ocsp: None,
         expected_result: Ok(()),
+        other_error: no_error!(),
     },
     // Same as above but without stapled OCSP.
     my_1password_com_valid_no_stapled => TestCase {
@@ -161,6 +172,7 @@ real_world_test_cases! {
         chain: VALID_1PASSWORD_COM_CHAIN,
         stapled_ocsp: None,
         expected_result: Ok(()),
+        other_error: no_error!(),
     },
     // Valid also for 1password.com (no subdomain).
     _1password_com_valid => TestCase {
@@ -168,6 +180,7 @@ real_world_test_cases! {
         chain: VALID_1PASSWORD_COM_CHAIN,
         stapled_ocsp: None,
         expected_result: Ok(()),
+        other_error: no_error!(),
     },
     // The certificate isn't valid for an unrelated subdomain.
     unrelated_domain_invalid => TestCase {
@@ -175,6 +188,7 @@ real_world_test_cases! {
         chain: VALID_1PASSWORD_COM_CHAIN,
         stapled_ocsp: None,
         expected_result: Err(TlsError::InvalidCertificate(CertificateError::NotValidForName)),
+        other_error: no_error!(),
     },
     // The certificate chain for the unrelated domain is valid for that
     // unrelated domain.
@@ -183,6 +197,7 @@ real_world_test_cases! {
         chain: VALID_UNRELATED_CHAIN,
         stapled_ocsp: None,
         expected_result: Ok(()),
+        other_error: no_error!(),
     },
     // The certificate chain for the unrelated domain is not valid for
     // my.1password.com.
@@ -191,6 +206,7 @@ real_world_test_cases! {
         chain: VALID_UNRELATED_CHAIN,
         stapled_ocsp: None,
         expected_result: Err(TlsError::InvalidCertificate(CertificateError::NotValidForName)),
+        other_error: no_error!(),
     },
 
     // OCSP stapling works.

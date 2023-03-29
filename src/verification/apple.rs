@@ -1,5 +1,5 @@
 use super::{log_server_cert, unsupported_server_name};
-use crate::verification::{error_messages, invalid_certificate};
+use crate::verification::invalid_certificate;
 use core_foundation::date::CFDate;
 use core_foundation_sys::date::kCFAbsoluteTimeIntervalSince1970;
 use rustls::{client::ServerCertVerifier, CertificateError, Error as TlsError};
@@ -164,9 +164,9 @@ impl Verifier {
                     errors::errSecCreateChainFailed => Ok(TlsError::InvalidCertificate(
                         CertificateError::UnknownIssuer,
                     )),
-                    errors::errSecInvalidExtendedKeyUsage => {
-                        Ok(invalid_certificate(error_messages::INVALID_EXTENSIONS))
-                    }
+                    errors::errSecInvalidExtendedKeyUsage => Ok(TlsError::InvalidCertificate(
+                        CertificateError::Other(std::sync::Arc::new(super::EkuError)),
+                    )),
                     errors::errSecCertificateRevoked => {
                         Ok(TlsError::InvalidCertificate(CertificateError::Revoked))
                     }

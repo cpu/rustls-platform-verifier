@@ -9,7 +9,7 @@ use std::time::SystemTime;
 
 use super::{log_server_cert, unsupported_server_name, ALLOWED_EKUS};
 use crate::android::{with_context, CachedClass};
-use crate::verification::{error_messages, invalid_certificate};
+use crate::verification::invalid_certificate;
 
 static CERT_VERIFIER_CLASS: CachedClass =
     CachedClass::new("com/onepassword/rustls_platform_verifier/CertificateVerifier");
@@ -216,9 +216,9 @@ impl Verifier {
                     VerifierStatus::InvalidEncoding => {
                         Err(InvalidCertificate(CertificateError::BadEncoding))
                     }
-                    VerifierStatus::InvalidExtension => {
-                        Err(invalid_certificate(error_messages::INVALID_EXTENSIONS))
-                    }
+                    VerifierStatus::InvalidExtension => Err(InvalidCertificate(
+                        CertificateError::Other(std::sync::Arc::new(super::EkuError)),
+                    )),
                 }
             }
             Err(e) => Err(TlsError::General(format!(

@@ -2,7 +2,7 @@ use super::log_server_cert;
 use once_cell::sync::OnceCell;
 use rustls::{
     client::{ServerCertVerifier, WebPkiVerifier},
-    Error as TlsError, RootCertStore,
+    CertificateError, Error as TlsError, RootCertStore,
 };
 
 #[derive(Default)]
@@ -119,6 +119,7 @@ impl ServerCertVerifier for Verifier {
                 ocsp_response,
                 now,
             )
+            .map_err(map_webpki_errors)
             // This only contains information from the system or other public
             // bits of the TLS handshake, so it can't leak anything.
             .map_err(|e| {
@@ -126,6 +127,20 @@ impl ServerCertVerifier for Verifier {
                 e
             })
     }
+}
+
+fn map_webpki_errors(err: TlsError) -> TlsError {
+    if let TlsError::InvalidCertificate(CertificateError::Other(other_err)) = &err {
+        if let Some(webpki_error) = other_err.downcast_ref::<webpki::Error>() {
+            if let webpki::Error::RequiredEkuNotFound = webpki_error {
+                return TlsError::InvalidCertificate(CertificateError::Other(std::sync::Arc::new(
+                    super::EkuError,
+                )));
+            }
+        }
+    }
+
+    err
 }
 
 /// Loads the static `webpki-roots` into the provided certificate store.

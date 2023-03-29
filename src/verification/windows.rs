@@ -52,7 +52,7 @@ use std::{
     time::SystemTime,
 };
 
-use crate::verification::{error_messages, invalid_certificate};
+use crate::verification::invalid_certificate;
 #[cfg(any(test, feature = "ffi-testing", feature = "dbg"))]
 use winapi::um::wincrypt::CERT_CHAIN_ENGINE_CONFIG;
 
@@ -455,7 +455,9 @@ fn map_trust_error_status(unfiltered_status: DWORD) -> Result<(), TlsError> {
         wincrypt::CERT_TRUST_IS_NOT_VALID_FOR_USAGE
             | wincrypt::CERT_TRUST_CTL_IS_NOT_VALID_FOR_USAGE,
     ) {
-        return Err(invalid_certificate(error_messages::INVALID_EXTENSIONS));
+        return Err(InvalidCertificate::Other(std::sync::Arc::new(
+            super::EkuError,
+        )));
     }
 
     // Otherwise, if there is only one class of error, map that class to
