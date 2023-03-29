@@ -277,13 +277,13 @@ dependencies = [
 [[package]]
 name = "hyper-rustls"
 version = "0.23.2"
-source = "git+https://github.com/cpu/hyper-rustls?branch=cpu-rustls-0.21.0-prep#5179ae10b8dfa05abbee5bbfee998d31b0849ee8"
+source = "git+https://github.com/cpu/hyper-rustls?branch=cpu-rustls-0.21.0-prep#538c6a209eeba44e8573ad43988067f3d293c14a"
 dependencies = [
  "http",
  "hyper",
  "rustls 0.21.0",
  "tokio",
- "tokio-rustls",
+ "tokio-rustls 0.24.0",
 ]
 
 [[package]]
@@ -525,7 +525,7 @@ dependencies = [
  "serde_json",
  "serde_urlencoded",
  "tokio",
- "tokio-rustls",
+ "tokio-rustls 0.23.4",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -826,6 +826,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-rustls"
+version = "0.24.0"
+source = "git+https://github.com/cpu/tokio-tls?branch=cpu-rustls-0.21.0-prep#4e4f7abe062dd7752b09a33e6e0d222b8bc9244b"
+dependencies = [
+ "rustls 0.21.0",
+ "tokio",
+ "webpki",
+]
+
+[[package]]
 name = "tokio-util"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1113,8 +1123,3 @@ checksum = "80d0f4e272c85def139476380b12f9ac60926689dd2e01d4923222f40580869d"
 dependencies = [
  "winapi",
 ]
-
-[[patch.unused]]
-name = "tokio-rustls"
-version = "0.24.0"
-source = "git+https://github.com/cpu/tokio-tls?branch=cpu-rustls-0.21.0-prep#4e4f7abe062dd7752b09a33e6e0d222b8bc9244b"

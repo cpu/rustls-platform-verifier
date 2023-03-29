@@ -78,6 +78,5 @@ features = ["dbg", "docsrs"]
 
 [patch.crates-io]
 reqwest = { git = 'https://github.com/cpu/reqwest', branch = 'cpu-rustls-0.21.0-prep' }
-rustls-native-certs = { git = 'https://github.com/rustls/rustls-native-certs' }
 hyper-rustls = { git = 'https://github.com/cpu/hyper-rustls', branch = 'cpu-rustls-0.21.0-prep' }
 tokio-rustls = { git = 'https://github.com/cpu/tokio-tls', branch = 'cpu-rustls-0.21.0-prep' }
