@@ -551,8 +551,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.21.0-alpha.1"
-source = "git+https://github.com/rustls/rustls.git#cad6b729ba7c9b94cf96f14ccc42a8d564f8b545"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07180898a28ed6a7f7ba2311594308f595e3dd2e3c3812fa0a80a47b45f17e5d"
 dependencies = [
  "log",
  "ring",
@@ -563,7 +564,8 @@ dependencies = [
 [[package]]
 name = "rustls-native-certs"
 version = "0.6.2"
-source = "git+https://github.com/cpu/rustls-native-certs?branch=cpu-rustls-0.21.0-prep#c5cc115a022714edcde1fb91596b25942cbaa278"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0167bac7a9f490495f3c33013e7722b53cb087ecbe082fb0c6387c96f634ea50"
 dependencies = [
  "openssl-probe",
  "rustls-pemfile",
