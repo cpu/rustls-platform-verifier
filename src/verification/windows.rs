@@ -578,6 +578,7 @@ impl Verifier {
             CRYPT_E_REVOKED => InvalidCertificate(CertificateError::Revoked),
             error_num => {
                 let err = std::io::Error::from_raw_os_error(error_num);
+                // The included error message has both the description and raw OS error code.
                 invalid_certificate(err.to_string())
             }
         })
