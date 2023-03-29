@@ -99,13 +99,12 @@ pub(super) fn verification_without_mock_root() {
         std::time::SystemTime::now(),
     );
 
-    let res = result.map(|_| ());
-    assert!(matches!(
-        res,
+    assert_eq!(
+        result.map(|_| ()),
         Err(TlsError::InvalidCertificate(
             CertificateError::UnknownIssuer
         ))
-    ));
+    );
 }
 
 #[test]
