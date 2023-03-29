@@ -500,7 +500,7 @@ checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
 [[package]]
 name = "reqwest"
 version = "0.11.15"
-source = "git+https://github.com/cpu/reqwest?branch=cpu-rustls-0.21.0-prep#cb672e12643bb7b1a361d96aab541e36f9345732"
+source = "git+https://github.com/cpu/reqwest?branch=cpu-rustls-0.21.0-prep#9be56521872f5c4383c8cd3937b708aedad5c2b5"
 dependencies = [
  "base64 0.21.0",
  "bytes",
@@ -576,7 +576,8 @@ dependencies = [
 [[package]]
 name = "rustls-native-certs"
 version = "0.6.2"
-source = "git+https://github.com/rustls/rustls-native-certs#b01721db78f653e6992742823af973ca3308a54a"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0167bac7a9f490495f3c33013e7722b53cb087ecbe082fb0c6387c96f634ea50"
 dependencies = [
  "openssl-probe",
  "rustls-pemfile",
