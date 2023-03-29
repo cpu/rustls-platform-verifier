@@ -455,8 +455,8 @@ fn map_trust_error_status(unfiltered_status: DWORD) -> Result<(), TlsError> {
         wincrypt::CERT_TRUST_IS_NOT_VALID_FOR_USAGE
             | wincrypt::CERT_TRUST_CTL_IS_NOT_VALID_FOR_USAGE,
     ) {
-        return Err(InvalidCertificate::Other(std::sync::Arc::new(
-            super::EkuError,
+        return Err(InvalidCertificate(CertificateError::Other(
+            std::sync::Arc::new(super::EkuError),
         )));
     }
 
