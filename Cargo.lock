@@ -281,9 +281,9 @@ source = "git+https://github.com/cpu/hyper-rustls?branch=cpu-rustls-0.21.0-prep#
 dependencies = [
  "http",
  "hyper",
- "rustls 0.21.0",
+ "rustls",
  "tokio",
- "tokio-rustls 0.24.0",
+ "tokio-rustls",
 ]
 
 [[package]]
@@ -500,7 +500,7 @@ checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
 [[package]]
 name = "reqwest"
 version = "0.11.15"
-source = "git+https://github.com/cpu/reqwest?branch=cpu-rustls-0.21.0-prep#9be56521872f5c4383c8cd3937b708aedad5c2b5"
+source = "git+https://github.com/cpu/reqwest?branch=cpu-rustls-0.21.0-prep#3fe7e81152a5a6fbec671fd62073a013f455f912"
 dependencies = [
  "base64 0.21.0",
  "bytes",
@@ -519,13 +519,13 @@ dependencies = [
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
- "rustls 0.21.0",
+ "rustls",
  "rustls-pemfile",
  "serde",
  "serde_json",
  "serde_urlencoded",
  "tokio",
- "tokio-rustls 0.23.4",
+ "tokio-rustls",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -547,18 +547,6 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi",
-]
-
-[[package]]
-name = "rustls"
-version = "0.20.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fff78fc74d175294f4e83b28343315ffcfb114b156f0185e9741cb5570f50e2f"
-dependencies = [
- "log",
- "ring",
- "sct",
- "webpki",
 ]
 
 [[package]]
@@ -606,7 +594,7 @@ dependencies = [
  "log",
  "once_cell",
  "reqwest",
- "rustls 0.21.0",
+ "rustls",
  "rustls-native-certs",
  "rustls-webpki",
  "security-framework",
@@ -817,21 +805,10 @@ dependencies = [
 
 [[package]]
 name = "tokio-rustls"
-version = "0.23.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c43ee83903113e03984cb9e5cebe6c04a5116269e900e3ddba8f068a62adda59"
-dependencies = [
- "rustls 0.20.8",
- "tokio",
- "webpki",
-]
-
-[[package]]
-name = "tokio-rustls"
 version = "0.24.0"
 source = "git+https://github.com/cpu/tokio-tls?branch=cpu-rustls-0.21.0-prep#4e4f7abe062dd7752b09a33e6e0d222b8bc9244b"
 dependencies = [
- "rustls 0.21.0",
+ "rustls",
  "tokio",
  "webpki",
 ]
