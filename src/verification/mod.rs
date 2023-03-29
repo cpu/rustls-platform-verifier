@@ -46,7 +46,7 @@ fn unsupported_server_name() -> rustls::Error {
 #[cfg(any(windows, target_os = "android", target_os = "macos", target_os = "ios"))]
 fn invalid_certificate(reason: impl Into<String>) -> rustls::Error {
     rustls::Error::InvalidCertificate(rustls::CertificateError::Other(std::sync::Arc::from(
-        Box::from(reason.into()),
+        reason.into(),
     )))
 }
 
