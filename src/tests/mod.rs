@@ -25,6 +25,7 @@ struct TestCase<'a, E: StdError> {
     ///
     /// Set this if the error being tested uses `CertificateError::Other` and not statically known
     /// variants in [TlsError]
+    #[allow(dead_code)]
     pub other_error: Option<E>,
 }
 
