@@ -131,12 +131,11 @@ impl ServerCertVerifier for Verifier {
 
 fn map_webpki_errors(err: TlsError) -> TlsError {
     if let TlsError::InvalidCertificate(CertificateError::Other(other_err)) = &err {
-        if let Some(webpki_error) = other_err.downcast_ref::<webpki::Error>() {
-            if let webpki::Error::RequiredEkuNotFound = webpki_error {
-                return TlsError::InvalidCertificate(CertificateError::Other(std::sync::Arc::new(
-                    super::EkuError,
-                )));
-            }
+        if let Some(webpki::Error::RequiredEkuNotFound) = other_err.downcast_ref::<webpki::Error>()
+        {
+            return TlsError::InvalidCertificate(CertificateError::Other(std::sync::Arc::new(
+                super::EkuError,
+            )));
         }
     }
 
