@@ -39,6 +39,7 @@ use crate::tests::{assert_cert_error_eq, verification_time};
 use crate::Verifier;
 use rustls::{client::ServerCertVerifier, CertificateError, Error as TlsError};
 use std::convert::TryFrom;
+use std::time::{Duration, SystemTime};
 
 // This is the certificate chain presented by one server for
 // my.1password.com when this test was updated 2023-08-01. It is
@@ -220,22 +221,24 @@ real_world_test_cases! {
     },
 
     // OCSP stapling works.
-    //
-    // XXX: This test is commented-out because it is a time-bomb due to the
-    // short lifetime of the OCSP responses for the certificate.
-    //
-    // TODO: If/when we can validate a certificate for a specific point in time
-    // during a test, re-enable this and have it test the certificate validity
-    // at a point in time where the OCSP response is valid.
-    //
-    // revoked_badssl_com_stapled => TestCase {
-    //     reference_id: "revoked.badssl.com",
-    //     chain: &[
-    //         include_bytes!("revoked_badssl_com_1.crt"),
-    //         include_bytes!("revoked_badssl_com_2.crt"),
-    //         ],
-    //     stapled_ocsp: Some(include_bytes!("revoked_badssl_com_1.ocsp")),
-    //     // XXX: We only do OCSP stapling on Windows.
-    //     valid: !cfg!(windows),
-    // },
+    revoked_badssl_com_stapled => TestCase {
+        reference_id: "revoked.badssl.com",
+        chain: &[
+            include_bytes!("revoked_badssl_com_1.crt"),
+            include_bytes!("revoked_badssl_com_2.crt"),
+        ],
+        stapled_ocsp: Some(include_bytes!("revoked_badssl_com_1.ocsp")),
+        // Note: the vendored revoked badssl cert and OCSP response expired ~Dec 9 2021,
+        //    so we use a verification time fixed to Dec 4 02:09:01 2021 UTC
+        verification_time: SystemTime::UNIX_EPOCH + Duration::from_secs(1_638_583_741),
+        #[cfg(not(any(target_os = "linux", target_arch = "wasm32", target_os = "windows")))]
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::Revoked)),
+        // For Linux and WASM32 we expect no error due to no OCSP stapling support:
+        //   https://github.com/rustls/webpki/issues/217
+        // For Windows, we _should_ get an error, but don't. More investigation required:
+        //   https://github.com/rustls/rustls-platform-verifier/issues/51
+        #[cfg(any(target_os = "linux", target_arch = "wasm32", target_os = "windows"))]
+        expected_result: Ok(()),
+        other_error: no_error!(),
+    },
 }
