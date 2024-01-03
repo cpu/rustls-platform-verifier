@@ -39,11 +39,12 @@ use winapi::{
         AUTHTYPE_SERVER, CERT_CHAIN_CACHE_END_CERT, CERT_CHAIN_CONTEXT, CERT_CHAIN_PARA,
         CERT_CHAIN_POLICY_IGNORE_ALL_REV_UNKNOWN_FLAGS, CERT_CHAIN_POLICY_PARA,
         CERT_CHAIN_POLICY_SSL, CERT_CHAIN_POLICY_STATUS,
-        CERT_CHAIN_REVOCATION_ACCUMULATIVE_TIMEOUT, CERT_CHAIN_REVOCATION_CHECK_END_CERT,
-        CERT_CONTEXT, CERT_OCSP_RESPONSE_PROP_ID, CERT_SET_PROPERTY_IGNORE_PERSIST_ERROR_FLAG,
-        CERT_STORE_ADD_ALWAYS, CERT_STORE_DEFER_CLOSE_UNTIL_LAST_FREE_FLAG, CERT_STORE_PROV_MEMORY,
-        CERT_USAGE_MATCH, CRYPT_DATA_BLOB, CTL_USAGE, SSL_EXTRA_CERT_CHAIN_POLICY_PARA,
-        USAGE_MATCH_TYPE_AND, X509_ASN_ENCODING,
+        CERT_CHAIN_REVOCATION_ACCUMULATIVE_TIMEOUT, CERT_CHAIN_REVOCATION_CHECK_CACHE_ONLY,
+        CERT_CHAIN_REVOCATION_CHECK_END_CERT, CERT_CONTEXT, CERT_OCSP_RESPONSE_PROP_ID,
+        CERT_SET_PROPERTY_IGNORE_PERSIST_ERROR_FLAG, CERT_STORE_ADD_ALWAYS,
+        CERT_STORE_DEFER_CLOSE_UNTIL_LAST_FREE_FLAG, CERT_STORE_PROV_MEMORY, CERT_USAGE_MATCH,
+        CRYPT_DATA_BLOB, CTL_USAGE, SSL_EXTRA_CERT_CHAIN_POLICY_PARA, USAGE_MATCH_TYPE_AND,
+        X509_ASN_ENCODING,
     },
 };
 
@@ -329,6 +330,7 @@ impl CertificateStore {
         &self,
         certificate: &Certificate,
         now: SystemTime,
+        ocsp_data: Option<&[u8]>,
     ) -> Result<CertChain, TlsError> {
         let mut cert_chain = ptr::null();
 
@@ -372,9 +374,15 @@ impl CertificateStore {
         // `CERT_CHAIN_REVOCATION_ACCUMULATIVE_TIMEOUT` accumulates network retrievals timeouts
         // to limit network time and improve performance.
         // `CERT_CHAIN_CACHE_END_CERT` speeds up the common case of multiple connections to same server.
-        const FLAGS: u32 = CERT_CHAIN_REVOCATION_CHECK_END_CERT
+        let mut flags = CERT_CHAIN_REVOCATION_CHECK_END_CERT
             | CERT_CHAIN_REVOCATION_ACCUMULATIVE_TIMEOUT
             | CERT_CHAIN_CACHE_END_CERT;
+
+        // If we have a stapled OCSP response, then set CERT_CHAIN_REVOCATION_CHECK_CACHE_ONLY
+        // so that the cached response is used and no fetching is performed.
+        if ocsp_data.is_some() {
+            flags = flags | CERT_CHAIN_REVOCATION_CHECK_CACHE_ONLY;
+        }
 
         // Lowering URL retrieval timeout from default 15s to 10s to account for higher internet speeds
         parameters.dwUrlRetrievalTimeout = 10 * 1000; // milliseconds
@@ -388,7 +396,7 @@ impl CertificateStore {
                 &mut time,
                 self.inner.as_ptr(),
                 &mut parameters,
-                FLAGS,
+                flags,
                 ptr::null_mut(),
                 &mut cert_chain,
             )
@@ -489,7 +497,7 @@ impl Verifier {
             .chain(Some(0))
             .collect();
 
-        let cert_chain = store.new_chain_in(&primary_cert, now)?;
+        let cert_chain = store.new_chain_in(&primary_cert, now, ocsp_data)?;
 
         let status = cert_chain.verify_chain_policy(server)?;
 
