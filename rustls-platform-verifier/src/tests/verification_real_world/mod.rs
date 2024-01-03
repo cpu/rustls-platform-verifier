@@ -38,6 +38,7 @@ use super::TestCase;
 use crate::tests::{assert_cert_error_eq, verification_time};
 use rustls::{CertificateError, Error as TlsError};
 use std::convert::TryFrom;
+use std::time::{Duration, SystemTime};
 
 // This is the certificate chain presented by one server for
 // my.1password.com when this test was updated 2022-09-22. It is
@@ -219,22 +220,22 @@ real_world_test_cases! {
     },
 
     // OCSP stapling works.
-    //
-    // XXX: This test is commented-out because it is a time-bomb due to the
-    // short lifetime of the OCSP responses for the certificate.
-    //
-    // TODO: If/when we can validate a certificate for a specific point in time
-    // during a test, re-enable this and have it test the certificate validity
-    // at a point in time where the OCSP response is valid.
-    //
-    // revoked_badssl_com_stapled => TestCase {
-    //     reference_id: "revoked.badssl.com",
-    //     chain: &[
-    //         include_bytes!("revoked_badssl_com_1.crt"),
-    //         include_bytes!("revoked_badssl_com_2.crt"),
-    //         ],
-    //     stapled_ocsp: Some(include_bytes!("revoked_badssl_com_1.ocsp")),
-    //     // XXX: We only do OCSP stapling on Windows.
-    //     valid: !cfg!(windows),
-    // },
+    // We skip this on Linux and Wasm32 where we use the webpki verifier, because it doesn't
+    // support OCSP stapling.
+    revoked_badssl_com_stapled => TestCase {
+        reference_id: "revoked.badssl.com",
+        chain: &[
+            include_bytes!("revoked_badssl_com_1.crt"),
+            include_bytes!("revoked_badssl_com_2.crt"),
+        ],
+        stapled_ocsp: Some(include_bytes!("revoked_badssl_com_1.ocsp")),
+        // Note: the vendored revoked badssl cert and OCSP response expired ~Dec 9 2021,
+        //    so we use a verification time fixed to Dec 4 02:09:01 2021 UTC
+        verification_time: SystemTime::UNIX_EPOCH + Duration::from_secs(1_638_583_741),
+        #[cfg(not(any(target_os = "linux", target_arch = "wasm32")))]
+        expected_result: Err(TlsError::InvalidCertificate(CertificateError::Revoked)),
+        #[cfg(any(target_os = "linux", target_arch = "wasm32"))]
+        expected_result: Ok(()), // https://github.com/rustls/webpki/issues/217
+        other_error: no_error!(),
+    },
 }
