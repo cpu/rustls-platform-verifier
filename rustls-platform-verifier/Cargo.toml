@@ -1,6 +1,6 @@
 [package]
 name = "rustls-platform-verifier"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["ComplexSpaces <complexspacescode@gmail.com>", "1Password"]
 description = "rustls-platform-verifier supports verifying TLS certificates in rustls with the operating system verifier"
 keywords = ["tls", "certificate", "verification", "os", "native"]
@@ -29,7 +29,7 @@ cert-logging = ["base64"]
 docsrs = ["jni", "once_cell"]
 
 [dependencies]
-rustls = { version = "0.22.1", features = ["tls12", "logging"] }
+rustls = { version = "0.23.0-alpha.0", features = ["tls12", "logging"] }
 log = { version = "0.4" }
 base64 = { version = "0.21", optional = true } # Only used when the `cert-logging` feature is enabled.
 jni = { version = "0.19", default-features = false, optional = true } # Only used during doc generation
