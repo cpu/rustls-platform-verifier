@@ -59,5 +59,5 @@ pub fn assert_cert_error_eq<E: StdError + PartialEq + 'static>(
 /// are regenerated.
 pub(crate) fn verification_time() -> pki_types::UnixTime {
     // Wednesday, January 3, 2024 6:03:08 PM UTC
-    pki_types::UnixTime::since_unix_epoch(Duration::from_secs(1_704_304_988))
+    pki_types::UnixTime::since_unix_epoch(Duration::from_secs(1710189025))
 }
