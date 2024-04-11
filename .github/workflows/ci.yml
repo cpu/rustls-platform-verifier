@@ -55,7 +55,9 @@ jobs:
         run: cargo clippy-ci
 
       - name: Linker flags
-        run: RUSTFLAGS="--print native-static-libs" cargo build
+        env:
+          RUSTFLAGS: --print native-static-libs
+        run: cargo build
 
       - name: Clippy (Android)
         if: matrix.os == 'ubuntu-latest'
