@@ -54,11 +54,17 @@ impl Verifier {
     /// WebPKI, using root certificates provided by the platform and augmented by
     /// the provided extra root certificates.
     pub fn new_with_extra_roots(
-        roots: impl IntoIterator<Item = pki_types::TrustAnchor<'static>>,
+        roots: impl IntoIterator<Item = impl Into<pki_types::CertificateDer<'static>>>,
     ) -> Self {
         Self {
             inner: OnceCell::new(),
-            extra_roots: roots.into_iter().collect::<Vec<_>>().into(),
+            extra_roots: roots
+                .into_iter()
+                .flat_map(|root| {
+                    webpki::anchor_from_trusted_cert(&root.into()).map(|anchor| anchor.to_owned())
+                })
+                .collect::<Vec<_>>()
+                .into(),
             #[cfg(any(test, feature = "ffi-testing", feature = "dbg"))]
             test_only_root_ca_override: None,
             crypto_provider: OnceCell::new(),
@@ -154,7 +160,7 @@ impl Verifier {
 
         #[cfg(target_arch = "wasm32")]
         {
-            root_store.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|root| {
+            root_store.add_trust_anchors(webpki_roots::TLS_SERVER_ROOT_CERTS.iter().map(|root| {
                 rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
                     root.subject,
                     root.spki,
