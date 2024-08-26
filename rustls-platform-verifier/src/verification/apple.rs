@@ -78,7 +78,7 @@ impl Verifier {
         Self {
             extra_roots: roots
                 .into_iter()
-                .map(|root| root.into())
+                .map(Into::into)
                 .collect::<Vec<_>>(),
             #[cfg(any(test, feature = "ffi-testing", feature = "dbg"))]
             test_only_root_ca_override: None,
@@ -152,7 +152,7 @@ impl Verifier {
         let extra_root = self
             .test_only_root_ca_override
             .as_ref()
-            .map(|root| pki_types::CertificateDer::from(root.as_slice().to_owned()));
+            .map(|root| pki_types::CertificateDer::from_slice(root.as_slice()));
 
         #[cfg(any(test, feature = "ffi-testing", feature = "dbg"))]
         let raw_extra_roots = raw_extra_roots.chain(&extra_root).to_owned();
